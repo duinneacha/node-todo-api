@@ -9,7 +9,7 @@ const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
 // Connect to a database
-mongoose.connect('mongodb://localhost:27017/TodoApp', { useNewUrlParser: true });
+mongoose.connect('mongodb://127.0.0.1:27017/TodoApp', { useNewUrlParser: true });
 
 // Create a model - so that mongoose knows how to store our data - the attributes we want it to have
 // (Mongo can store schema less data in documents - mongoose likes a model)
