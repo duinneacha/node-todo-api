@@ -1,6 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 
+const { ObjectID } = require('mongodb');
+
 const { mongoose } = require('./db/mongoose');
 const { Todo } = require('./models/todo');
 const { User } = require('./models/user');
@@ -34,6 +36,29 @@ app.get('/todos', (req, res) => {
   });
 });
 
+// Get Route using params - i.e. /todos/2132413
+app.get('/todos/:id', (req, res) => {
+  var id = req.params.id;
+
+  // Check to see if the ID entered is a valid mongodb _id
+  if (!ObjectID.isValid(id)) {
+    return res.status(404).send()
+  }
+
+  Todo.findById(id).then((todo) => {
+    if (!todo) {
+      return res.status(404).send();
+    }
+
+    // Happy path here - send the found todo back wrapped as an object
+    res.send({ todo });
+
+  }).catch((error) => {
+    res.status(400).send();
+  })
+
+  // res.send(req.params);
+});
 
 
 app.listen(3000, () => {
