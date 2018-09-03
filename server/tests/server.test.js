@@ -1,12 +1,16 @@
 const expect = require('expect');
 const request = require('supertest');
 
+const { ObjectID } = require('mongodb');
+
 const { app } = require('./../server');
 const { Todo } = require('./../models/todo');
 
-const dummyData = [{
+const dummyTodoData = [{
+  _id: new ObjectID(),
   text: 'First test todo'
 }, {
+  _id: new ObjectID(),
   text: 'Second test todo'
 }];
 
@@ -14,7 +18,7 @@ const dummyData = [{
 // Wipe the database before instantiating the test, then add the two docs in dummyData
 beforeEach((done) => {
   Todo.deleteMany({}).then(() => {
-    return Todo.insertMany(dummyData);
+    return Todo.insertMany(dummyTodoData);
   }).then(() => done());
 });
 
@@ -72,4 +76,36 @@ describe('GET /todos', () => {
       .end(done);
 
   })
+});
+
+
+describe('Get todos/ID tests', () => {
+  it('should return todo doc', (done) => {
+    request(app)
+      .get(`/todos/${dummyTodoData[0]._id.toHexString()}`)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.todo.text).toBe(dummyTodoData[0].text);
+      })
+      .end(done);
+  });
+
+  it('should retuen 404 if todo not found', (done) => {
+
+    var dummyNewID = new ObjectID();
+    request(app)
+      .get(`/todos/${dummyNewID.toHexString()}`)
+      .expect(404)
+      .end(done);
+  });
+
+  it('should return 404 for non-object ids', (done) => {
+    request(app)
+      .get(`/todos/123`)
+      .expect(404)
+      .end(done);
+
+  });
+
+
 });
