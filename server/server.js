@@ -62,6 +62,32 @@ app.get('/todos/:id', (req, res) => {
   // res.send(req.params);
 });
 
+// Delete Route
+app.delete('/todos/:id', (req, res) => {
+
+  // Get the ID from the request
+  var id = req.params.id;
+
+  // Check to see if the ID entered is a valid mongodb _id
+  if (!ObjectID.isValid(id)) {
+    return res.status(404).send();
+  }
+
+  Todo.findByIdAndRemove(id).then((todo) => {
+    if (!todo) {
+      return res.status(404).send();
+    }
+
+    // Happy scenario here
+    res.send(todo);
+
+  }).catch((error) => {
+    res.status(400).send();
+  })
+
+
+});
+
 
 app.listen(port, () => {
   console.log(`Started on Port ${port}`);
