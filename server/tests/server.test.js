@@ -90,7 +90,7 @@ describe('Get todos/ID tests', () => {
       .end(done);
   });
 
-  it('should retuen 404 if todo not found', (done) => {
+  it('should return 404 if todo not found', (done) => {
 
     var dummyNewID = new ObjectID();
     request(app)
@@ -104,8 +104,49 @@ describe('Get todos/ID tests', () => {
       .get(`/todos/123`)
       .expect(404)
       .end(done);
+  });
+});
+
+describe('DELETE /todos/:id', () => {
+
+  it('should remove a todo', (done) => {
+
+    // Get the ID of the second document in the collection
+    var hexId = dummyTodoData[1]._id.toHexString();
+    request(app)
+      .delete(`/todos/${hexId}`)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.todo._id).toBe(hexId);
+      })
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+
+        // Query the database to check the doc was actually deleted using findById
+        Todo.findById(hexId).then((todo) => {
+          expect(todo).toBeFalsy();
+          done();
+        }).catch((error) => done(error));
+
+      })
 
   });
 
+  it('should return a 404 if todo not found', (done) => {
+    var dummyNewID = new ObjectID();
+    request(app)
+      .get(`/todos/${dummyNewID.toHexString()}`)
+      .expect(404)
+      .end(done);
+  });
+
+  it('should return 404 if object id is invalid', (done) => {
+    request(app)
+      .get(`/todos/123`)
+      .expect(404)
+      .end(done);
+  });
 
 });

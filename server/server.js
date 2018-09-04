@@ -79,7 +79,7 @@ app.delete('/todos/:id', (req, res) => {
     }
 
     // Happy scenario here
-    res.send(todo);
+    res.send({ todo });
 
   }).catch((error) => {
     res.status(400).send();
