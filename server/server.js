@@ -134,7 +134,7 @@ app.post('/users', (req, res) => {
   // Save the user - first generate token which returns token as promise which then sends success or catches error
   user.save().then(() => {
 
-    user.generateAuthToken()
+    return user.generateAuthToken()
 
   }).then((token) => {
     res.header('x-auth', token).send(user);
@@ -143,6 +143,25 @@ app.post('/users', (req, res) => {
   });
 
 });
+
+
+app.get('/users/me', (req, res) => {
+  var token = req.header('x-auth');
+
+
+  // Going to access a method in the User schema
+  User.findByToken(token).then((user) => {
+    if (!user) {
+      return Promise.reject();
+    }
+
+    res.send(user);
+  }).catch((error) => {
+    res.status(401).send();
+  });
+
+});
+
 
 app.listen(port, () => {
   console.log(`Started on Port ${port}`);

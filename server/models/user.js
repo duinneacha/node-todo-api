@@ -54,10 +54,40 @@ UserSchema.methods.generateAuthToken = function () {
   user.tokens = user.tokens.concat([{ access, token }]);
 
   // Save the changes above
-  user.save().then(() => {
+  return user.save().then(() => {
     return token;
   });
 };
+
+// statics is an object that tuens into a model method as opposed to an instance method
+UserSchema.statics.findByToken = function (token) {
+  var User = this;
+  var decoded;
+
+  // jwt.verify will throw an error if anything goes wrong - hence the try/catch
+  try {
+    decoded = jwt.verify(token, 'abc123');
+  } catch (error) {
+
+    // return a promise that will always reject
+    // return new Promise((resolve, reject) => {
+    //   reject();
+    // })
+
+    // Return a rejected promise - more elegantly than above
+    return Promise.reject();
+
+  }
+
+  // Happy scenario here - successfully decoded the token that was passed with the header
+  // findOne returns a promise which is returned to the calling method
+  return User.findOne({
+    '_id': decoded._id,
+    'tokens.token': token,
+    'tokens.access': 'auth'
+  });
+
+}
 
 // User Model passing in the Schema
 const User = mongoose.model('User', UserSchema);
