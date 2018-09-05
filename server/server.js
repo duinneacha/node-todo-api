@@ -17,9 +17,9 @@ const port = process.env.PORT;
 app.use(bodyParser.json());
 
 
-// Post Route
+// Post Route Todos
 app.post('/todos', (req, res) => {
-  console.log(req.body);
+
   var todo = new Todo({
     text: req.body.text
   });
@@ -31,7 +31,7 @@ app.post('/todos', (req, res) => {
   });
 });
 
-// Get Route
+// Get Route Todos
 app.get('/todos', (req, res) => {
   Todo.find().then((todos) => {
     res.send({ todos });
@@ -91,16 +91,10 @@ app.delete('/todos/:id', (req, res) => {
 // Update Todo items
 app.patch('/todos/:id', (req, res) => {
   var id = req.params.id;
-  console.log('Text of Body:', req.body.text);
+
   // get the text and completed fields from the info passed to the request using lodash
   var body = _.pick(req.body, ['text', 'completed']);
 
-  console.log(body.completed);
-  // console.log('body.text', body.text);
-  // console.log('req.body.text', req.body.text);
-  // console.log('req', req)
-  // console.log('body', body);
-  // console.log('req.body', req.body);
   // // Validate that the id entered is a valid mongo object id
   if (!ObjectID.isValid(id)) {
     return res.status(404).send();
@@ -126,6 +120,26 @@ app.patch('/todos/:id', (req, res) => {
     res.send({ todo });
   }).catch((error) => {
     res.status(400).send();
+  });
+
+});
+
+// POST / users
+app.post('/users', (req, res) => {
+
+  var userData = _.pick(req.body, ['email', 'password']);
+
+  var user = new User(userData);
+
+  // Save the user - first generate token which returns token as promise which then sends success or catches error
+  user.save().then(() => {
+
+    user.generateAuthToken()
+
+  }).then((token) => {
+    res.header('x-auth', token).send(user);
+  }).catch((error) => {
+    res.status(400).send(error);
   });
 
 });
