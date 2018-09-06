@@ -88,6 +88,36 @@ UserSchema.statics.findByToken = function (token) {
   });
 };
 
+// Find user by credentials - used at login
+UserSchema.statics.findByCredentials = function (email, password) {
+
+  var User = this;
+
+  // Try to find the user in the user database
+  return User.findOne({ email }).then((user) => {
+
+    // If the user is not found return rejected promise
+    if (!user) {
+      return Promise.reject();
+    }
+
+    // The user will exist if the code lands here
+    return new Promise((resolve, reject) => {
+
+      // use bcrypt to compare user password with inputted password
+      bcrypt.compare(password, user.password, (err, res) => {
+        if (res) {
+          resolve(user);
+        } else {
+          reject();
+        }
+      })
+
+    });
+
+  });
+};
+
 // Method that runs as part of Mongoose Middleware just before a save - hash the password
 UserSchema.pre('save', function (next) {
   var user = this;

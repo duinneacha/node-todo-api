@@ -151,6 +151,28 @@ app.get('/users/me', authenticate, (req, res) => {
 });
 
 
+// Dedicated route for logging in users POST /users/login
+app.post('/users/login', (req, res) => {
+  var body = _.pick(req.body, ['email', 'password']);
+
+
+  // findByCredentials will return a user is found or rejected promise
+  User.findByCredentials(body.email, body.password).then((user) => {
+
+    // username and password match here - generate token - use return to keep the chain alive so errors can be caught
+    return user.generateAuthToken().then((token) => {
+
+      // respond with the token and the user object
+      res.header('x-auth', token).send(user);
+    });
+
+  }).catch((error) => {
+    res.status(400).send();
+  });
+  //res.send(body);
+});
+
+
 app.listen(port, () => {
   console.log(`Started on Port ${port}`);
 });
