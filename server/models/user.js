@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
-
+const bcrypt = require('bcryptjs');
 
 // Using a Schema allows us to tag on methods
 const UserSchema = new mongoose.Schema({
@@ -59,7 +59,7 @@ UserSchema.methods.generateAuthToken = function () {
   });
 };
 
-// statics is an object that tuens into a model method as opposed to an instance method
+// statics is an object that turns into a model method as opposed to an instance method
 UserSchema.statics.findByToken = function (token) {
   var User = this;
   var decoded;
@@ -86,8 +86,25 @@ UserSchema.statics.findByToken = function (token) {
     'tokens.token': token,
     'tokens.access': 'auth'
   });
+};
 
-}
+// Method that runs as part of Mongoose Middleware just before a save - hash the password
+UserSchema.pre('save', function (next) {
+  var user = this;
+
+  // We only want to encrypt the password if it was modified - check for this here
+  if (user.isModified('password')) {
+    bcrypt.genSalt(10, (error, saltValue) => {
+      bcrypt.hash(user.password, saltValue, (error, hash) => {
+        user.password = hash;
+        next();
+      });
+    });
+  } else {
+    next();
+  }
+
+});
 
 // User Model passing in the Schema
 const User = mongoose.model('User', UserSchema);

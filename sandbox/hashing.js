@@ -6,21 +6,44 @@ const { SHA256 } = require('crypto-js');
 const jwt = require('jsonwebtoken');
 
 
-var data = {
-  id: 10,
-  name: 'Object NAme'
-};
+const bcrypt = require('bcryptjs');
 
-console.log('Original data:', data);
+
+
+var password = '123abc!';
+
+console.log('password:', password);
+
+// hash the password
+
+// bcrypt.genSalt(10, (error, saltValue) => {
+//   bcrypt.hash(password, saltValue, (error, hash) => {
+//     console.log('hashed password:', hash);
+//   });
+// });
+
+var hashedPassword = '$2a$10$cUyulfsh.ts7JfPRqreHxumN3G0bSElUSqluj6/HAOFi1iYddj7MK';
+
+bcrypt.compare(password, hashedPassword, (error, result) => {
+  console.log(result);
+})
+
+
+// var data = {
+//   id: 10,
+//   name: 'Object NAme'
+// };
+
+// console.log('Original data:', data);
 
 // jwt.sign takes an object and secret and returns a token
-var token = jwt.sign(data, 'abc123');
-console.log('token:', token);
+// var token = jwt.sign(data, 'abc123');
+// console.log('token:', token);
 
 
-// jwt.verify takes a token and the secret and returns the original object
-var decodedToken = jwt.verify(token, 'abc123');
-console.log('decodedToken:', decodedToken);
+// // jwt.verify takes a token and the secret and returns the original object
+// var decodedToken = jwt.verify(token, 'abc123');
+// console.log('decodedToken:', decodedToken);
 
 
 // let message = 'I am a user of the Todo system.';
