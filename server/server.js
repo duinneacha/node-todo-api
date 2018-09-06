@@ -8,6 +8,7 @@ const { ObjectID } = require('mongodb');
 const { mongoose } = require('./db/mongoose');
 const { Todo } = require('./models/todo');
 const { User } = require('./models/user');
+const { authenticate } = require('./middleware/authenticate');
 
 const app = express();
 const port = process.env.PORT;
@@ -145,21 +146,8 @@ app.post('/users', (req, res) => {
 });
 
 
-app.get('/users/me', (req, res) => {
-  var token = req.header('x-auth');
-
-
-  // Going to access a method in the User schema
-  User.findByToken(token).then((user) => {
-    if (!user) {
-      return Promise.reject();
-    }
-
-    res.send(user);
-  }).catch((error) => {
-    res.status(401).send();
-  });
-
+app.get('/users/me', authenticate, (req, res) => {
+  res.send(req.user);
 });
 
 
