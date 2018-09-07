@@ -133,7 +133,7 @@ describe('DELETE /todos/:id', () => {
 
         // Query the database to check the doc was actually deleted using findById
         Todo.findById(hexId).then((todo) => {
-          expect(todo).toNotExist();
+          expect(todo).toBeFalsy();
           done();
         }).catch((error) => done(error));
 
@@ -141,7 +141,7 @@ describe('DELETE /todos/:id', () => {
 
   });
 
-  it('should not remove a todo a user dows not own', (done) => {
+  it('should not remove a todo a user does not own', (done) => {
 
     // Get the ID of the second document in the collection
     var hexId = dummyTodoData[0]._id.toHexString();
@@ -156,7 +156,7 @@ describe('DELETE /todos/:id', () => {
 
         // Query the database to check the doc was actually deleted using findById
         Todo.findById(hexId).then((todo) => {
-          expect(todo).toExist();
+          expect(todo).toBeTruthy();
           done();
         }).catch((error) => done(error));
 
@@ -230,14 +230,14 @@ describe('PATCH /todos/:id', () => {
       .patch(`/todos/${hexId}`)
       .set('x-auth', dummyUsersData[1].tokens[0].token)
       .send({
-        completed: true,
+        completed: false,
         text
       })
       .expect(200)
       .expect((res) => {
         expect(res.body.todo.text).toBe(text);
-        expect(res.body.todo.completed).toBe(true);
-        expect(res.body.todo.completedAt).toBeTruthy();
+        expect(res.body.todo.completed).toBe(false);
+        expect(res.body.todo.completedAt).toBeFalsy();
       })
       .end(done);
   });
@@ -293,7 +293,7 @@ describe('POST /users', () => {
 
         User.findOne({ email }).then((user) => {
           expect(user).toBeTruthy();
-          expect(user.password).toNotBe(password);
+          expect(user.password).not.toBe(password);
           done();
         }).catch((error) => done(error));
       });
@@ -336,7 +336,7 @@ describe('POST users/login', () => {
       })
       .expect(200)
       .expect((res) => {
-        expect(res.headers['x-auth']).toExist();
+        expect(res.headers['x-auth']).toBeTruthy();
       })
       .end((err, res) => {
         if (err) {
@@ -344,7 +344,7 @@ describe('POST users/login', () => {
         }
 
         User.findById(dummyUsersData[1]._id).then((user) => {
-          expect(user.tokens[1]).toInclude({
+          expect(user.toObject().tokens[1]).toMatchObject({
             access: 'auth',
             token: res.headers['x-auth']
           });
@@ -364,7 +364,7 @@ describe('POST users/login', () => {
       })
       .expect(400)
       .expect((res) => {
-        expect(res.headers['x-auth']).toNotExist();
+        expect(res.headers['x-auth']).toBeFalsy();
       })
       .end((err, res) => {
         if (err) {
