@@ -19,10 +19,11 @@ app.use(bodyParser.json());
 
 
 // Post Route Todos
-app.post('/todos', (req, res) => {
+app.post('/todos', authenticate, (req, res) => {
 
   var todo = new Todo({
-    text: req.body.text
+    text: req.body.text,
+    _creator: req.user._id
   });
 
   todo.save().then((doc) => {
@@ -33,8 +34,10 @@ app.post('/todos', (req, res) => {
 });
 
 // Get Route Todos
-app.get('/todos', (req, res) => {
-  Todo.find().then((todos) => {
+app.get('/todos', authenticate, (req, res) => {
+  Todo.find({
+    _creator: req.user._id
+  }).then((todos) => {
     res.send({ todos });
   }, (error) => {
     res.status(400).send(error);
@@ -42,7 +45,7 @@ app.get('/todos', (req, res) => {
 });
 
 // Get Route using params - i.e. /todos/2132413
-app.get('/todos/:id', (req, res) => {
+app.get('/todos/:id', authenticate, (req, res) => {
   var id = req.params.id;
 
   // Check to see if the ID entered is a valid mongodb _id
@@ -50,7 +53,10 @@ app.get('/todos/:id', (req, res) => {
     return res.status(404).send()
   }
 
-  Todo.findById(id).then((todo) => {
+  Todo.findOne({
+    _id: id,
+    _creator: req.user._id
+  }).then((todo) => {
     if (!todo) {
       return res.status(404).send();
     }
@@ -66,7 +72,7 @@ app.get('/todos/:id', (req, res) => {
 });
 
 // Delete Route
-app.delete('/todos/:id', (req, res) => {
+app.delete('/todos/:id', authenticate, (req, res) => {
 
   // Get the ID from the request
   var id = req.params.id;
@@ -76,7 +82,10 @@ app.delete('/todos/:id', (req, res) => {
     return res.status(404).send();
   }
 
-  Todo.findByIdAndRemove(id).then((todo) => {
+  Todo.findOneAndRemove({
+    _id: id,
+    _creator: req.user._id
+  }).then((todo) => {
     if (!todo) {
       return res.status(404).send();
     }
@@ -90,7 +99,7 @@ app.delete('/todos/:id', (req, res) => {
 });
 
 // Update Todo items
-app.patch('/todos/:id', (req, res) => {
+app.patch('/todos/:id', authenticate, (req, res) => {
   var id = req.params.id;
 
   // get the text and completed fields from the info passed to the request using lodash
@@ -110,7 +119,10 @@ app.patch('/todos/:id', (req, res) => {
   }
 
   // Query to update the database
-  Todo.findByIdAndUpdate(id, { $set: body }, { new: true }).then((todo) => {
+  Todo.findOneAndUpdate({
+    _id: id,
+    _creator: req.user._id
+  }, { $set: body }, { new: true }).then((todo) => {
 
     // Check to see if the object was found - if not return with 404 error
     if (!todo) {
