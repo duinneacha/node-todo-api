@@ -21,7 +21,6 @@ if (env === 'production') {
   mongoose.connect('mongodb://admin:Passw0rd@ds243812.mlab.com:43812/adtodos', { useNewUrlParser: true });
 } else if (env === 'development') {
   process.env.MONGODB_URI = 'mongodb://127.0.0.1:27017/TodoApp';
-  console.log('Connecting to MongoDB locally!');
   mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true });
 } else {
   process.env.MONGODB_URI = 'mongodb://127.0.0.1:27017/TodoAppTest';
