@@ -59,6 +59,21 @@ UserSchema.methods.generateAuthToken = function () {
   });
 };
 
+// Remove a token from the User Object - a.k.a. logging the user out
+
+UserSchema.methods.removeToken = function (token) {
+  var user = this;
+
+  // Update the user object using the mongoose $pull method that will remove whatever is specified
+  // In this instance we are removing the passed in token
+  return user.update({
+    $pull: {
+      tokens: { token }
+    }
+  });
+};
+
+
 // statics is an object that turns into a model method as opposed to an instance method
 UserSchema.statics.findByToken = function (token) {
   var User = this;
@@ -87,6 +102,7 @@ UserSchema.statics.findByToken = function (token) {
     'tokens.access': 'auth'
   });
 };
+
 
 // Find user by credentials - used at login
 UserSchema.statics.findByCredentials = function (email, password) {
