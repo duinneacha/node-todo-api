@@ -48,7 +48,7 @@ UserSchema.methods.toJSON = function () {
 UserSchema.methods.generateAuthToken = function () {
   let user = this;
   let access = 'auth';
-  let token = jwt.sign({ _id: user._id.toHexString(), access }, 'abc123').toString();
+  let token = jwt.sign({ _id: user._id.toHexString(), access }, process.env.JWT_SECRET).toString();
 
   // Add the access and token to the tokens array on the user object
   user.tokens = user.tokens.concat([{ access, token }]);
@@ -81,15 +81,10 @@ UserSchema.statics.findByToken = function (token) {
 
   // jwt.verify will throw an error if anything goes wrong - hence the try/catch
   try {
-    decoded = jwt.verify(token, 'abc123');
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
   } catch (error) {
 
-    // return a promise that will always reject
-    // return new Promise((resolve, reject) => {
-    //   reject();
-    // })
-
-    // Return a rejected promise - more elegantly than above
+    // Return a rejected promise
     return Promise.reject();
 
   }
@@ -157,13 +152,3 @@ const User = mongoose.model('User', UserSchema);
 
 
 module.exports = { User };
-
-// var newUser = new User({
-  //   email: 'duinneacha@gmail.com'
-  // });
-
-  // newUser.save().then((newUSerDocument) => {
-  //   console.log('USer created successfully', newUser);
-  // }, (error) => {
-  //   console.log('Unable to create new user', error)
-  // });
